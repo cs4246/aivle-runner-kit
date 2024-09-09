@@ -1,10 +1,5 @@
 # Test Creator
 
-from gym import Env as GymEnv
-
-class Env(GymEnv):
-    pass
-
 class Generator(object):
     def __init__(self, *args, **kwargs):
         pass

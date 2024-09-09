@@ -1,7 +1,3 @@
-import json
-import numpy as np
-import random
-
 '''
 agent
 	__init__.py
