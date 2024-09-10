@@ -8,10 +8,16 @@ test_suite
 		test_suite = TestSuite()
 '''
 
+import argparse
+
 class TestSuiteNotFound(Exception): pass
 class AgentNotFound(Exception): pass
 
 def main():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-o', '--output-path', default=None)
+	args = parser.parse_args()
+
 	try:
 		from test_suite import test_suite
 	except ModuleNotFoundError as e:
@@ -23,7 +29,11 @@ def main():
 
 	output = test_suite.run(create_agent)
 
-	print(output.json)
+	if args.output_path is not None:
+		output.to_json(args.output_path)
+
+	print(output.to_json())
+
 
 if __name__ == "__main__":
-	main()
+    main()

@@ -1,6 +1,7 @@
 from .utils import time, prints
 from collections import namedtuple
 from enum import Enum
+from contextlib import redirect_stdout
 import json
 
 
@@ -17,16 +18,15 @@ class TestCase(object):
 	def run(self, agent_create_fn):
 		error = None
 		evaluation = None
-		output = prints.Output()
 		try:
-			with time.time_limit(self.time_limit), prints.RedirectPrints(output):
+			with time.time_limit(self.time_limit), redirect_stdout(None):
 				agent = agent_create_fn(self.identifier)
 				evaluation = self.test_env.run(agent, runs=self.runs)
 		except Exception as e: # also catch TimeoutException
 			error = e
 			evaluation = self.test_env.terminated(e)
 		finally:
-			return TestCaseResult(test_case=self, evaluation=evaluation, error=error, output=output.value)
+			return TestCaseResult(test_case=self, evaluation=evaluation, error=error, output=None)
 
 
 class TestSuite(object):
@@ -55,7 +55,7 @@ class TestSuiteResult(object):
 		self.show_outputs = show_outputs
 
 	@property
-	def json(self):
+	def data(self):
 		test_cases = {}
 		for res in self.results:
 			test_cases[res.test_case.identifier] = res.evaluation.json
@@ -66,4 +66,10 @@ class TestSuiteResult(object):
 			'test_cases': test_cases,
 			'point': self.point
 		}
-		return json.dumps(data)
+		return data
+
+	def to_json(self, path=None):
+		if path is None:
+			return json.dumps(self.data)
+		with open(path, 'w') as f:
+			json.dump(self.data, f)
